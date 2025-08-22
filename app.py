@@ -37,6 +37,26 @@ def post_to_slack(message, metadata):
     response.raise_for_status()
 
 
+def post_to_slack_external(message, channel):
+    print(f"post_to_slack_external {message}")
+    headers = {
+        "Content-type": "application/json",
+        "Authorization": f"Bearer {current_app.config['SLACK_TOKEN']}",
+    }
+    print(f"headers {headers}")
+    print(f"channel {channel}")
+    response = requests.post(
+        current_app.config["SLACK_POST_URL"],
+        json={
+            "token": current_app.config["SLACK_TOKEN"],
+            "text": message,
+            "channel": channel
+        },
+        headers=headers
+    )
+    response.raise_for_status()
+
+
 def extract_slack_text(request_body):
     # Deep JSON structure
     elements = request_body["event"]["blocks"][0]["elements"][0]["elements"]
@@ -72,6 +92,14 @@ async def incoming_slack_endpoint():
     post_to_slack(extract_slack_text(request_body),
                   outgoing_metadata(request_body))
 
+    return {"status": "OK"}, 200
+
+
+@app.route("/api/slack/external", methods=["POST"])
+async def external_slack_message():
+    """Receives a message to post on slack from external app"""
+    request_body = await request.get_json()
+    post_to_slack_external(request_body["message"], request_body["channel"])
     return {"status": "OK"}, 200
 
 if __name__ == "__main__":
