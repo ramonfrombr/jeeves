@@ -114,6 +114,71 @@ def post_to_slack_external(message, channel):
     response.raise_for_status()
 
 
+def post_to_slack_new_comment_blog(message, channel, title, link, email, comment):
+    print(f"post_to_slack_new_comment_blog {message}")
+    headers = {
+        "Content-type": "application/json",
+        "Authorization": f"Bearer {current_app.config['SLACK_TOKEN']}",
+    }
+    print(f"headers {headers}")
+    print(f"channel {channel}")
+    response = requests.post(
+        current_app.config["SLACK_POST_URL"],
+        json={
+            "token": current_app.config["SLACK_TOKEN"],
+            "channel": channel,
+            "blocks": [
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": message,
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "section",
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            "text": f"*Post Title:*\n{title}"
+                        },
+                    ]
+                },
+                {
+                    "type": "section",
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            "text": f"*Post Link:*\n{link}"
+                        },
+                    ]
+                },
+                {
+                    "type": "section",
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            "text": f"*Comment Email:*\n{email}"
+                        },
+                    ]
+                },
+                {
+                    "type": "section",
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            "text": f"*Comment Content:*\n{comment}"
+                        },
+                    ]
+                },
+            ]
+        },
+        headers=headers
+    )
+    response.raise_for_status()
+
+
 def extract_slack_text(request_body):
     # Deep JSON structure
     elements = request_body["event"]["blocks"][0]["elements"][0]["elements"]
@@ -158,6 +223,21 @@ async def external_slack_message():
     request_body = await request.get_json()
     post_to_slack_external(request_body["message"], request_body["channel"])
     return {"status": "OK"}, 200
+
+
+@app.route("/api/slack/new-comment-blog", methods=["POST"])
+async def new_comment_blog():
+    request_body = await request.get_json()
+    post_to_slack_new_comment_blog(
+        request_body["message"],
+        request_body["channel"],
+        request_body["post_title"],
+        request_body["post_link"],
+        request_body["comment_email"],
+        request_body["comment_content"]
+    )
+    return {"status": "OK"}, 200
+
 
 if __name__ == "__main__":
     app.run()
