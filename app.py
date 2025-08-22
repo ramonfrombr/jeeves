@@ -20,9 +20,9 @@ def respond_to_slack_challenge(incoming_challenge):
 def post_to_slack(message, metadata):
     print(f"post_to_slack {message}")
     headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {current_app.config['SLACK_TOKEN']}"
-    },
+        "Content-type": "application/json",
+        "Authorization": f"Bearer {current_app.config['SLACK_TOKEN']}",
+    }
     print(f"headers {headers}")
     print(metadata)
     response = requests.post(
