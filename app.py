@@ -1,9 +1,13 @@
+import os
 import requests
 import asyncio
 import logging
 from quart import Quart, request, current_app
 
 app = Quart(__name__)
+app.config["SLACK_TOKEN"] = os.environ.get('SLACK_TOKEN')
+app.config["SLACK_POST_URL"] = os.environ.get('SLACK_POST_URL')
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
