@@ -72,5 +72,7 @@ async def incoming_slack_endpoint():
     post_to_slack(extract_slack_text(request_body),
                   outgoing_metadata(request_body))
 
+    return {"status": "OK"}, 200
+
 if __name__ == "__main__":
     app.run()
