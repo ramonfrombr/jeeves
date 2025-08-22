@@ -50,6 +50,7 @@ def post_to_slack_external(message, channel):
         json={
             "token": current_app.config["SLACK_TOKEN"],
             "text": message,
+            "type": "markdown",
             "channel": channel
         },
         headers=headers
