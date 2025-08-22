@@ -50,8 +50,64 @@ def post_to_slack_external(message, channel):
         json={
             "token": current_app.config["SLACK_TOKEN"],
             "text": message,
-            "type": "markdown",
-            "channel": channel
+            "channel": channel,
+            "blocks": [
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "New request",
+                        "emoji": True
+                    }
+                },
+                {
+                    "type": "section",
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            "text": "*Type:*\nPaid Time Off"
+                        },
+                        {
+                            "type": "mrkdwn",
+                            "text": "*Created by:*\n<example.com|Fred Enriquez>"
+                        }
+                    ]
+                },
+                {
+                    "type": "section",
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            "text": "*When:*\nAug 10 - Aug 13"
+                        }
+                    ]
+                },
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "Approve"
+                            },
+                            "style": "primary",
+                            "value": "click_me_123"
+                        },
+                        {
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "emoji": True,
+                                "text": "Reject"
+                            },
+                            "style": "danger",
+                            "value": "click_me_123"
+                        }
+                    ]
+                }
+            ]
         },
         headers=headers
     )
