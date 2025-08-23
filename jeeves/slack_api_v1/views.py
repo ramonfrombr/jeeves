@@ -95,11 +95,11 @@ def create_new_blog_comment_blocks(request_body):
                     "fields": [
                         {
                             "type": "mrkdwn",
-                            "text": f"Post Title:\n{request_body['title']}"
+                            "text": f"Post Title:\n{request_body['post_title']}"
                         },
                         {
                             "type": "mrkdwn",
-                            "text": f"Post Link:\n{request_body['link']}"
+                            "text": f"Post Link:\n{request_body['post_link']}"
                         },
                     ]
         },
@@ -108,11 +108,11 @@ def create_new_blog_comment_blocks(request_body):
                     "fields": [
                         {
                             "type": "mrkdwn",
-                            "text": f"Comment Content:\n{request_body['comment']}"
+                            "text": f"Comment Content:\n{request_body['comment_content']}"
                         },
                         {
                             "type": "mrkdwn",
-                            "text": f"Comment Email:\n{request_body['email']}"
+                            "text": f"Comment Email:\n{request_body['comment_email']}"
                         },
                     ]
         },
