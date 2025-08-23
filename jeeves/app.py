@@ -16,28 +16,6 @@ async def create_app(name=__name__):
     from .slack_api_v1 import slack_api_v1 as slack_api_v1_bp
     app.register_blueprint(slack_api_v1_bp)
 
-    def respond_to_slack_challenge(incoming_challenge):
-        return incoming_challenge.get("challenge", ""), 200
-
-    def post_to_slack(message, metadata):
-        print(f"post_to_slack {message}")
-        headers = {
-            "Content-type": "application/json",
-            "Authorization": f"Bearer {app.config['SLACK_TOKEN']}",
-        }
-        print(f"headers {headers}")
-        print(metadata)
-        response = requests.post(
-            app.config["SLACK_POST_URL"],
-            json={
-                "token": app.config["SLACK_TOKEN"],
-                "text": message,
-                "channel": metadata["channel"]
-            },
-            headers=headers
-        )
-        response.raise_for_status()
-
     def post_to_slack_new_comment_blog(message, channel, title, link, email, comment):
         headers = {
             "Content-type": "application/json",
@@ -98,41 +76,6 @@ async def create_app(name=__name__):
             headers=headers
         )
         response.raise_for_status()
-
-    def extract_slack_text(request_body):
-        # Deep JSON structure
-        elements = request_body["event"]["blocks"][0]["elements"][0]["elements"]
-        for part in elements:
-            if part["type"] == "text":
-                return part["text"].lstrip()
-
-        return request_body["event"]["text"].partition(">")[2].lstrip()
-
-    def outgoing_metadata(request_body):
-        return {
-            "type": "slack",
-            "message_type": request_body["event"]["type"],
-            "team": request_body["event"]["team"],
-            "sender": request_body["event"]["user"],
-            "channel": request_body["event"]["channel"],
-            "ts": request_body["event"]["ts"],  # used for replies
-        }
-
-    @app.route("/api/slack", methods=["POST"])
-    async def incoming_slack_endpoint():
-        """Receive an event from Slack."""
-        request_body = await request.get_json()
-
-        # When setting up a Slack app, we are sent a verification
-        # challenge, and we must respond with the token provided.
-        if request_body.get("type", "") == "url_verification":
-            logger.info("Responding to url verification challenge")
-            return respond_to_slack_challenge(request_body)
-
-        post_to_slack(extract_slack_text(request_body),
-                      outgoing_metadata(request_body))
-
-        return {"status": "OK"}, 200
 
     @app.route("/api/slack/new-comment-blog", methods=["POST"])
     async def new_comment_blog():
