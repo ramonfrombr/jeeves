@@ -140,7 +140,7 @@ def post_to_slack_new_comment_blog(message, channel, title, link, email, comment
                     "fields": [
                         {
                             "type": "mrkdwn",
-                            "text": f"Post Title:\n{title}"
+                            "text": f"*Post Title:*\n{title}"
                         },
                     ]
                 },
@@ -149,7 +149,7 @@ def post_to_slack_new_comment_blog(message, channel, title, link, email, comment
                     "fields": [
                         {
                             "type": "mrkdwn",
-                            "text": f"Post Link:\n{link}"
+                            "text": f"*Post Link:*\n{link}"
                         },
                     ]
                 },
@@ -158,7 +158,7 @@ def post_to_slack_new_comment_blog(message, channel, title, link, email, comment
                     "fields": [
                         {
                             "type": "mrkdwn",
-                            "text": f"Comment Email:\n{email}"
+                            "text": f"*Comment Email:*\n{email}"
                         },
                     ]
                 },
@@ -167,7 +167,7 @@ def post_to_slack_new_comment_blog(message, channel, title, link, email, comment
                     "fields": [
                         {
                             "type": "mrkdwn",
-                            "text": f"Comment Content:\n{comment}"
+                            "text": f"*Comment Content:*\n{comment}"
                         },
                     ]
                 },
