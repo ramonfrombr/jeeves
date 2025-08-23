@@ -78,3 +78,66 @@ async def reply_message_to_slack_route():
                            outgoing_metadata(request_body))
 
     return {"status": "OK"}, 200
+
+
+def create_new_blog_comment_blocks(request_body):
+    return [
+        {
+            "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": request_body["message"],
+                        "emoji": True
+                    }
+        },
+        {
+            "type": "section",
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            "text": f"Post Title:\n{request_body['title']}"
+                        },
+                        {
+                            "type": "mrkdwn",
+                            "text": f"Post Link:\n{request_body['link']}"
+                        },
+                    ]
+        },
+        {
+            "type": "section",
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            "text": f"Comment Content:\n{request_body['comment']}"
+                        },
+                        {
+                            "type": "mrkdwn",
+                            "text": f"Comment Email:\n{request_body['email']}"
+                        },
+                    ]
+        },
+    ]
+
+
+def send_message_to_slack_new_blog_comment(request_body):
+    headers = {
+        "Content-type": "application/json",
+        "Authorization": f"Bearer {current_app.config['SLACK_TOKEN']}",
+    }
+    response = requests.post(
+        current_app.config["SLACK_POST_URL"],
+        json={
+            "token": current_app.config["SLACK_TOKEN"],
+            "channel": request_body["channel"],
+            "blocks": create_new_blog_comment_blocks(request_body)
+        },
+        headers=headers
+    )
+    response.raise_for_status()
+
+
+@slack_api_v1.route("/message/send/new_blog_comment", methods=["POST"])
+async def send_message_to_slack_new_blog_comment_route():
+    request_body = await request.get_json()
+    send_message_to_slack_new_blog_comment(request_body)
+    return {"status": "OK"}, 200
