@@ -13,6 +13,9 @@ async def create_app(name=__name__):
     app.config["SLACK_TOKEN"] = os.environ.get('SLACK_TOKEN')
     app.config["SLACK_POST_URL"] = os.environ.get('SLACK_POST_URL')
 
+    from .slack_api_v1 import slack_api_v1 as slack_api_v1_bp
+    app.register_blueprint(slack_api_v1_bp)
+
     def respond_to_slack_challenge(incoming_challenge):
         return incoming_challenge.get("challenge", ""), 200
 
@@ -30,22 +33,6 @@ async def create_app(name=__name__):
                 "token": app.config["SLACK_TOKEN"],
                 "text": message,
                 "channel": metadata["channel"]
-            },
-            headers=headers
-        )
-        response.raise_for_status()
-
-    def post_to_slack_external(message, channel):
-        headers = {
-            "Content-type": "application/json",
-            "Authorization": f"Bearer {app.config['SLACK_TOKEN']}",
-        }
-        response = requests.post(
-            app.config["SLACK_POST_URL"],
-            json={
-                "token": app.config["SLACK_TOKEN"],
-                "text": message,
-                "channel": channel
             },
             headers=headers
         )
@@ -145,14 +132,6 @@ async def create_app(name=__name__):
         post_to_slack(extract_slack_text(request_body),
                       outgoing_metadata(request_body))
 
-        return {"status": "OK"}, 200
-
-    @app.route("/api/slack/external", methods=["POST"])
-    async def external_slack_message():
-        """Receives a message to post on slack from external app"""
-        request_body = await request.get_json()
-        post_to_slack_external(
-            request_body["message"], request_body["channel"])
         return {"status": "OK"}, 200
 
     @app.route("/api/slack/new-comment-blog", methods=["POST"])
