@@ -1,8 +1,6 @@
 import quart.flask_patch
-from flask_sqlalchemy import SQLAlchemy
+from . import db
 from werkzeug.security import check_password_hash, generate_password_hash
-
-db = SQLAlchemy()
 
 
 class User(db.Model):
