@@ -1,4 +1,3 @@
-import quart.flask_patch
 from . import db
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -27,5 +26,5 @@ class User(db.Model):
 
     def authenticate(self, password):
         checked = check_password_hash(self.password, password)
-        self._authetnicated = checked
+        self._authenticated = checked
         return self._authenticated

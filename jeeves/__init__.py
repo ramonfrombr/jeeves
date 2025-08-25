@@ -1,5 +1,4 @@
 import os
-import asyncio
 import logging
 from quart import Quart
 from flask_sqlalchemy import SQLAlchemy
@@ -10,11 +9,13 @@ logger.setLevel(logging.DEBUG)
 db = SQLAlchemy()
 
 
-async def create_app(name=__name__):
-    app = Quart(name)
+async def create_app(*args, **kwargs):
+    app = Quart(__name__)
+
     app.config["SLACK_TOKEN"] = os.environ.get('SLACK_TOKEN')
     app.config["SLACK_POST_URL"] = os.environ.get('SLACK_POST_URL')
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///your_database.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
 
@@ -22,8 +23,3 @@ async def create_app(name=__name__):
     app.register_blueprint(slack_api_v1_bp)
 
     return app
-
-app = None
-
-loop = asyncio.get_event_loop()
-app = loop.run_until_complete(create_app())
