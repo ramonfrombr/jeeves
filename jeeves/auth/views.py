@@ -9,6 +9,7 @@ from quart_auth import current_user, login_required, login_user, logout_user, Au
 @auth.route("/login", methods=["GET", 'POST'])
 def login():
     form = LoginForm()
+    """
     if form.validate_on_submit():
         email, password = form.data["email"], form.data["password"]
         q = db.session.query(User).filter(User.email == email)
@@ -16,6 +17,7 @@ def login():
         if user is not None and user.verify_password(password):
             login_user(AuthUser(user.id))
             return redirect(url_for("index"))
+    """
     return render_template("login.html", form=form)
 
 
