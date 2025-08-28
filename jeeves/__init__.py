@@ -17,7 +17,7 @@ db = SQLAlchemy()
 auth_manager = QuartAuth()
 
 
-async def create_app():
+async def create_app(*args, **kwargs):
 
     # Put the import here when running migrations
     # import quart_flask_patch
@@ -32,10 +32,10 @@ async def create_app():
     auth_manager.init_app(app)
 
     @app.route("/")
-    @login_required
     async def index():
-        return await render_template('index.html')
+        return "Hello"
 
+    """
     @app.errorhandler(Unauthorized)
     async def redirect_to_login(*_):
         return redirect(url_for("auth.login"))
@@ -45,6 +45,7 @@ async def create_app():
 
     from .auth import auth as auth_bp
     app.register_blueprint(auth_bp)
+    """
 
     return app
 
