@@ -1,9 +1,9 @@
-from quart import render_template, redirect, render_template, url_for
+from quart import current_app, render_template, redirect, render_template, url_for
 from .forms import LoginForm
 from ..models import User
 from . import auth
 from .. import db
-from quart_auth import current_user, login_required, login_user, logout_user, AuthUser
+from quart_auth import Unauthorized, current_user, login_required, login_user, logout_user, AuthUser
 import asyncio
 
 
@@ -32,3 +32,8 @@ async def login():
 async def logout():
     await logout_user()
     return redirect("/")
+
+
+@current_app.errorhandler(Unauthorized)
+async def redirect_to_login(*_):
+    return redirect(url_for("auth.login"))
