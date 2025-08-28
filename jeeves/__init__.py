@@ -31,29 +31,15 @@ async def create_app(*args, **kwargs):
 
     db.init_app(app)
     auth_manager.init_app(app)
-    from jeeves.models import User
-
-    @app.route("/")
-    async def index():
-        loop = asyncio.get_running_loop()
-
-        # Run blocking DB query in a thread
-        def get_user_sync():
-            return db.session.query(User).filter(
-                User.email == 'ramonfrombr@gmail.com').first()
-
-        user = await loop.run_in_executor(None, get_user_sync)
-        return "Hello" + user.email
 
     from .slack_api_v1 import slack_api_v1 as slack_api_v1_bp
-    app.register_blueprint(slack_api_v1_bp)
-
-    @app.errorhandler(Unauthorized)
-    async def redirect_to_login(*_):
-        return redirect(url_for("auth.login"))
+    app.register_blueprint(slack_api_v1_bp, url_prefix='/slack_api/v1')
 
     from .auth import auth as auth_bp
-    app.register_blueprint(auth_bp)
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+
+    from .home import home as home_bp
+    app.register(home_bp, url_prefix="/")
 
     return app
 
