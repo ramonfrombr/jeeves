@@ -7,20 +7,20 @@ from quart_auth import current_user, login_required, login_user, logout_user, Au
 
 
 @auth.route("/login", methods=["GET", 'POST'])
-def login():
+async def login():
     form = LoginForm()
-    if form.validate_on_submit():
+    if await form.validate_on_submit():
         email, password = form.data["email"], form.data["password"]
-        q = db.session.query(User).filter(User.email == email)
+        q = await db.session.query(User).filter(User.email == email)
         user = q.first()
         if user is not None and user.verify_password(password):
-            login_user(AuthUser(user.id))
+            await login_user(AuthUser(user.id))
             return redirect(url_for("index"))
-    return render_template("login.html", form=form)
+    return await render_template("login.html", form=form)
 
 
 @auth.route("/logout")
 @login_required
-def logout():
-    logout_user()
+async def logout():
+    await logout_user()
     return redirect("/")
