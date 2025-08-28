@@ -35,9 +35,14 @@ async def create_app(*args, **kwargs):
 
     @app.route("/")
     async def index():
-        q = db.session.query(User).filter(
-            User.email == 'ramonfrombr@gmail.com')
-        user = q.first()
+        loop = asyncio.get_running_loop()
+
+        # Run blocking DB query in a thread
+        def get_user_sync():
+            return db.session.query(User).filter(
+                User.email == 'ramonfrombr@gmail.com').first()
+
+        user = await loop.run_in_executor(None, get_user_sync)
         return "Hello" + user.email
 
     from .slack_api_v1 import slack_api_v1 as slack_api_v1_bp
