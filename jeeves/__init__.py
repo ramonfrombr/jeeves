@@ -43,14 +43,12 @@ async def create_app(*args, **kwargs):
     from .slack_api_v1 import slack_api_v1 as slack_api_v1_bp
     app.register_blueprint(slack_api_v1_bp)
 
-    """
     @app.errorhandler(Unauthorized)
     async def redirect_to_login(*_):
         return redirect(url_for("auth.login"))
 
     from .auth import auth as auth_bp
     app.register_blueprint(auth_bp)
-    """
 
     return app
 
