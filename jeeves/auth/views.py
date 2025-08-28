@@ -9,7 +9,7 @@ from quart_auth import current_user, login_required, login_user, logout_user, Au
 @auth.route("/login", methods=["GET", 'POST'])
 async def login():
     form = LoginForm()
-    if await form.validate_on_submit():
+    if form.validate_on_submit():
         email, password = form.data["email"], form.data["password"]
         q = await db.session.query(User).filter(User.email == email)
         user = q.first()
