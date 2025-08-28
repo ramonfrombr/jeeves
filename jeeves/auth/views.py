@@ -4,6 +4,7 @@ from ..models import User
 from . import auth
 from .. import db
 from quart_auth import current_user, login_required, login_user, logout_user, AuthUser
+import asyncio
 
 
 @auth.route("/login", methods=["GET", 'POST'])
@@ -11,9 +12,16 @@ async def login():
     form = LoginForm()
     if form.validate_on_submit():
         email, password = form.data["email"], form.data["password"]
-        q = await db.session.query(User).filter(User.email == email)
-        user = q.first()
-        if user is not None and user.verify_password(password):
+
+        loop = asyncio.get_running_loop()
+
+        # Run sync query in a thread
+        def get_user_sync():
+            return db.session.query(User).filter(User.email == email).first()
+
+        user = await loop.run_in_executor(None, get_user_sync)
+
+        if user and user.verify_password(password):
             await login_user(AuthUser(user.id))
             return redirect(url_for("index"))
     return await render_template("login.html", form=form)
