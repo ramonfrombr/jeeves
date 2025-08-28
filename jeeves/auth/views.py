@@ -1,4 +1,3 @@
-import quart_flask_patch
 from quart import render_template, redirect, render_template, url_for
 from .forms import LoginForm
 from ..models import User
