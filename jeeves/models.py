@@ -1,4 +1,3 @@
-import quart_flask_patch
 from flask_login import UserMixin
 from . import db
 from werkzeug.security import check_password_hash, generate_password_hash

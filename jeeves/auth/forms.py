@@ -1,4 +1,3 @@
-import quart_flask_patch
 import wtforms as f
 from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired
