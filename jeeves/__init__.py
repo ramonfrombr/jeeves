@@ -9,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from quart import Quart, redirect, render_template, url_for
 from quart_auth import QuartAuth, Unauthorized, login_required
 
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -30,18 +31,22 @@ async def create_app(*args, **kwargs):
 
     db.init_app(app)
     auth_manager.init_app(app)
+    from jeeves.models import User
 
     @app.route("/")
     async def index():
-        return "Hello"
+        q = db.session.query(User).filter(
+            User.email == 'ramonfrombr@gmail.com')
+        user = q.first()
+        return "Hello" + user.email
+
+    from .slack_api_v1 import slack_api_v1 as slack_api_v1_bp
+    app.register_blueprint(slack_api_v1_bp)
 
     """
     @app.errorhandler(Unauthorized)
     async def redirect_to_login(*_):
         return redirect(url_for("auth.login"))
-
-    from .slack_api_v1 import slack_api_v1 as slack_api_v1_bp
-    app.register_blueprint(slack_api_v1_bp)
 
     from .auth import auth as auth_bp
     app.register_blueprint(auth_bp)
