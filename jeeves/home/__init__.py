@@ -1,19 +1,20 @@
 import asyncio
-from quart import Blueprint
+from quart import Blueprint, render_template
 from jeeves.models import User
-from jeeves import db
+from ..db import Base, engine, get_session
+from sqlalchemy.future import select
+from quart_auth import current_user, login_required, login_user, logout_user, AuthUser
+
 
 home = Blueprint("home", __name__)
 
 
 @home.route("/")
+@login_required
 async def index():
-    loop = asyncio.get_running_loop()
 
-    # Run blocking DB query in a thread
-    def get_user_sync():
-        return db.session.query(User).filter(
-            User.email == 'ramonfrombr@gmail.com').first()
-
-    user = await loop.run_in_executor(None, get_user_sync)
-    return "Hello" + user.email
+    async for session in get_session():
+        result = await session.execute(select(User).filter_by(email="ramonfrombr@gmail.com"))
+        user = result.scalars().first()
+    print(user.email)
+    return await render_template("index.html")

@@ -1,17 +1,19 @@
+import os
 from flask_login import UserMixin
-from . import db
+from sqlalchemy import Column, Integer, String, Boolean, JSON
+from .db import Base
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
-class User(UserMixin, db.Model):
+class User(Base):
     __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    email = db.Column(db.String(128))
-    slack_id = db.Column(db.String(128))
-    password_hash = db.Column(db.String(254))
-    location = db.Column(db.String(128))
-    config = db.Column(db.JSON)
-    is_admin = db.Column(db.Boolean, default=False)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String(128))
+    slack_id = Column(String(128))
+    password_hash = Column(String(254))
+    location = Column(String(128))
+    config = Column(JSON)
+    is_admin = Column(Boolean, default=False)
 
     def __init__(self, *args, **kwargs):
         super(User, self).__init__(*args, **kwargs)
