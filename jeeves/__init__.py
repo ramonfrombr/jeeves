@@ -1,11 +1,9 @@
 # Put the import here when running the app
-import quart_flask_patch
 
 import os
 import asyncio
 import logging
 
-from flask_sqlalchemy import SQLAlchemy
 from quart import Quart, redirect, render_template, url_for
 from quart_auth import QuartAuth, Unauthorized, login_required
 
@@ -14,7 +12,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-db = SQLAlchemy()
 auth_manager = QuartAuth()
 
 
@@ -29,8 +26,11 @@ async def create_app(*args, **kwargs):
     app.config["SLACK_POST_URL"] = os.environ.get('SLACK_POST_URL')
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get('DATABASE_URL')
 
-    db.init_app(app)
     auth_manager.init_app(app)
+
+    @app.errorhandler(Unauthorized)
+    async def redirect_to_login(*_):
+        return redirect(url_for("auth.login"))
 
     from .slack_api_v1 import slack_api_v1 as slack_api_v1_bp
     app.register_blueprint(slack_api_v1_bp, url_prefix='/slack_api/v1')
@@ -39,7 +39,7 @@ async def create_app(*args, **kwargs):
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
     from .home import home as home_bp
-    app.register(home_bp, url_prefix="/")
+    app.register_blueprint(home_bp, url_prefix="/")
 
     return app
 

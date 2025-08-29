@@ -1,39 +1,31 @@
-from quart import current_app, render_template, redirect, render_template, url_for
+from quart import render_template, redirect, render_template, url_for
 from .forms import LoginForm
 from ..models import User
 from . import auth
-from .. import db
-from quart_auth import Unauthorized, current_user, login_required, login_user, logout_user, AuthUser
-import asyncio
+from quart_auth import current_user, login_required, login_user, logout_user, AuthUser
+from ..db import Base, engine, get_session
+from sqlalchemy.future import select
 
 
 @auth.route("/login", methods=["GET", 'POST'])
 async def login():
-    form = LoginForm()
-    if form.validate_on_submit():
+    form = await LoginForm().create_form()
+    if await form.validate_on_submit():
         email, password = form.data["email"], form.data["password"]
 
-        loop = asyncio.get_running_loop()
-
-        # Run sync query in a thread
-        def get_user_sync():
-            return db.session.query(User).filter(User.email == email).first()
-
-        user = await loop.run_in_executor(None, get_user_sync)
+        user = None
+        async for session in get_session():
+            result = await session.execute(select(User).filter_by(email=email))
+            user = result.scalars().first()
 
         if user and user.verify_password(password):
-            await login_user(AuthUser(user.id))
-            return redirect(url_for("index"))
+            login_user(AuthUser(user.id))
+            return redirect(url_for("home.index"))
     return await render_template("login.html", form=form)
 
 
 @auth.route("/logout")
 @login_required
 async def logout():
-    await logout_user()
+    logout_user()
     return redirect("/")
-
-
-@current_app.errorhandler(Unauthorized)
-async def redirect_to_login(*_):
-    return redirect(url_for("auth.login"))
