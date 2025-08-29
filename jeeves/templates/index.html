@@ -1,0 +1,6 @@
+<h1>Slackbot Admin</h1>
+
+{% if current_user.is_authenticated %}
+  Hi!
+  <a href="{{ url_for('auth.logout') }}">Log out</a>
+{% endif %}
