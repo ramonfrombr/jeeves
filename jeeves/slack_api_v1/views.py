@@ -1,6 +1,7 @@
 import requests
 import logging
 from quart import request, current_app
+from jeeves.controller.message_router import process_message
 from jeeves.outgoing.slack import send_message_to_slack
 from . import slack_api_v1
 
@@ -14,32 +15,12 @@ async def send_message_to_slack_route():
     """Receives a message to post on slack"""
     request_body = await request.get_json()
     send_message_to_slack(
-        request_body["message"], request_body["channel"])
+        request_body["message"], request_body)
     return {"status": "OK"}, 200
 
 
 def respond_to_slack_challenge(incoming_challenge):
     return incoming_challenge.get("challenge", ""), 200
-
-
-def reply_message_to_slack(message, metadata):
-    logger.debug(f"reply_message_to_slack {message}")
-    headers = {
-        "Content-type": "application/json",
-        "Authorization": f"Bearer {current_app.config['SLACK_TOKEN']}",
-    }
-    logger.debug(f"headers {headers}")
-    logger.debug(metadata)
-    response = requests.post(
-        current_app.config["SLACK_POST_URL"],
-        json={
-            "token": current_app.config["SLACK_TOKEN"],
-            "text": message,
-            "channel": metadata["channel"]
-        },
-        headers=headers
-    )
-    response.raise_for_status()
 
 
 def extract_slack_text(request_body):
@@ -74,8 +55,8 @@ async def reply_message_to_slack_route():
         logger.info("Responding to url verification challenge")
         return respond_to_slack_challenge(request_body)
 
-    reply_message_to_slack(extract_slack_text(request_body),
-                           outgoing_metadata(request_body))
+    await process_message(extract_slack_text(request_body),
+                          outgoing_metadata(request_body))
 
     return {"status": "OK"}, 200
 
