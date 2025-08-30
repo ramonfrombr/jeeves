@@ -2,7 +2,7 @@ import requests
 from quart import current_app
 
 
-def send_message_to_slack(message, channel):
+def send_message_to_slack(message, metadata):
     headers = {
         "Content-type": "application/json",
         "Authorization": f"Bearer {current_app.config['SLACK_TOKEN']}",
@@ -12,7 +12,7 @@ def send_message_to_slack(message, channel):
         json={
             "token": current_app.config["SLACK_TOKEN"],
             "text": message,
-            "channel": channel
+            "channel": metadata["channel"]
         },
         headers=headers
     )
