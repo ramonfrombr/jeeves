@@ -1,2 +1,2 @@
-async def weather_action():
+async def weather_action(message, metadata):
     return "Weather message"
