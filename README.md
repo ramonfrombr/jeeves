@@ -38,3 +38,17 @@ or
 ```
 hypercorn jeeves:app
 ```
+
+### Run the application using Docker
+
+Build the image.
+
+```
+docker build -t quart-app .
+```
+
+Run the container.
+
+```
+docker run -p 8000:8000 --env-file .env quart-app
+```
