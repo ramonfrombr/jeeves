@@ -30,3 +30,9 @@ jobs:
       - name: Run tests with pytest
         run: |
           pytest
+        env:
+          SLACK_POST_URL: ${{ secrets.SLACK_POST_URL }}
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          WEATHER_URL: ${{ secrets.WEATHER_URL }}
+          WEATHER_TOKEN: ${{ secrets.WEATHER_TOKEN }}
