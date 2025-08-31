@@ -1,0 +1,59 @@
+name: Python Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment: testing
+
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests with pytest
+        run: |
+          pytest
+        env:
+          SLACK_POST_URL: ${{ secrets.SLACK_POST_URL }}
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          WEATHER_URL: ${{ secrets.WEATHER_URL }}
+          WEATHER_TOKEN: ${{ secrets.WEATHER_TOKEN }}
+
+      - name: Get PR creation timestamp as Unix epoch
+        id: pr_time
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          PR_CREATED_AT=${{ github.event.pull_request.created_at }}
+          EPOCH=$(date -d "$PR_CREATED_AT" +%s)
+          echo "time=$EPOCH" >> $GITHUB_OUTPUT
+
+      - name: Send the pull request link into the Slack channel
+        if: ${{ steps.pr_time.outputs.time }}
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_TOKEN }}
+          payload: |
+            {
+              "channel": "C09CESE1N8G",  # Replace with channel name or ID
+              "text": "A PR was created <!date^${{ steps.pr_time.outputs.time }}^{date_num} at {time_secs}|just now>: ${{ github.event.pull_request.html_url }}"
+            }

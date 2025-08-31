@@ -29,7 +29,7 @@ async def process_message(message, metadata):
             break
 
     if reply:
-        send_message_to_slack(reply, metadata)
+        await send_message_to_slack(reply, metadata)
 
     """ If we have different response routes, we can use this method
     OUTGOING_MAP.get(metadata["type"], default_outgoing)(

@@ -1,4 +1,4 @@
-import requests
+import httpx
 import logging
 from quart import request, current_app
 from jeeves.controller.message_router import process_message
@@ -14,7 +14,7 @@ logger.setLevel(logging.DEBUG)
 async def send_message_to_slack_route():
     """Receives a message to post on slack"""
     request_body = await request.get_json()
-    send_message_to_slack(
+    await send_message_to_slack(
         request_body["message"], request_body)
     return {"status": "OK"}, 200
 
@@ -24,13 +24,19 @@ def respond_to_slack_challenge(incoming_challenge):
 
 
 def extract_slack_text(request_body):
-    # Deep JSON structure
-    elements = request_body["event"]["blocks"][0]["elements"][0]["elements"]
-    for part in elements:
-        if part["type"] == "text":
-            return part["text"].lstrip()
+    event = request_body.get("event", {})
+    blocks = event.get("blocks")
 
-    return request_body["event"]["text"].partition(">")[2].lstrip()
+    if blocks:
+        try:
+            elements = blocks[0]["elements"][0]["elements"]
+            extracted_text = "".join(e.get("text", "")
+                                     for e in elements if e["type"] == "text").strip()
+            return extracted_text
+        except (KeyError, IndexError, TypeError):
+            pass  # fall back to plain text
+
+    return event.get("text", "").strip()
 
 
 def outgoing_metadata(request_body):
@@ -100,25 +106,26 @@ def create_new_blog_comment_blocks(request_body):
     ]
 
 
-def send_message_to_slack_new_blog_comment(request_body):
+async def send_message_to_slack_new_blog_comment(request_body):
     headers = {
         "Content-type": "application/json",
         "Authorization": f"Bearer {current_app.config['SLACK_TOKEN']}",
     }
-    response = requests.post(
-        current_app.config["SLACK_POST_URL"],
-        json={
-            "token": current_app.config["SLACK_TOKEN"],
-            "channel": request_body["channel"],
-            "blocks": create_new_blog_comment_blocks(request_body)
-        },
-        headers=headers
-    )
-    response.raise_for_status()
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            current_app.config["SLACK_POST_URL"],
+            json={
+                "token": current_app.config["SLACK_TOKEN"],
+                "channel": request_body["channel"],
+                "blocks": create_new_blog_comment_blocks(request_body),
+            },
+            headers=headers
+        )
+        response.raise_for_status()
 
 
 @slack_api_v1.route("/message/send/new_blog_comment", methods=["POST"])
 async def send_message_to_slack_new_blog_comment_route():
     request_body = await request.get_json()
-    send_message_to_slack_new_blog_comment(request_body)
+    await send_message_to_slack_new_blog_comment(request_body)
     return {"status": "OK"}, 200
