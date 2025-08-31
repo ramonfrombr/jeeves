@@ -46,9 +46,10 @@ jobs:
           token: ${{ secrets.SLACK_TOKEN }}
           payload: |
             {
-              "name": "pull-request-review-${{ github.sha }}"
+              "name": "pr-${{ github.run_number }}"
             }
-
+        env:
+          SLACK_LOG_LEVEL: DEBUG
       - name: Send the pull request link into the Slack channel
         if: ${{ steps.conversation.outputs.ok }}
         uses: slackapi/slack-github-action@v2.1.1
