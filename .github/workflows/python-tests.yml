@@ -38,8 +38,16 @@ jobs:
           WEATHER_URL: ${{ secrets.WEATHER_URL }}
           WEATHER_TOKEN: ${{ secrets.WEATHER_TOKEN }}
 
+      - name: Get PR creation timestamp as Unix epoch
+        id: pr_time
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          PR_CREATED_AT=${{ github.event.pull_request.created_at }}
+          EPOCH=$(date -d "$PR_CREATED_AT" +%s)
+          echo "time=$EPOCH" >> $GITHUB_OUTPUT
+
       - name: Send the pull request link into the Slack channel
-        if: github.event_name == 'pull_request'
+        if: ${{ steps.pr_time.outputs.time }}
         uses: slackapi/slack-github-action@v2.1.1
         with:
           method: chat.postMessage
@@ -47,5 +55,5 @@ jobs:
           payload: |
             {
               "channel": "C09CESE1N8G",  # Replace with channel name or ID
-              "text": "A PR was created <!date^${{ github.event.pull_request.updated_at }}^{date_num} at {time_secs}|just now>: ${{ github.event.pull_request.html_url }}"
+              "text": "A PR was created <!date^${{ steps.pr_time.outputs.time }}^{date_num} at {time_secs}|just now>: ${{ github.event.pull_request.html_url }}"
             }
