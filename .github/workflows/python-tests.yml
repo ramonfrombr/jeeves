@@ -4,9 +4,11 @@ on:
   push:
     branches: [main, master]
   pull_request:
+    types: [opened, synchronize, reopened, closed]
 
 jobs:
   test:
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
     runs-on: ubuntu-latest
     environment: testing
 
@@ -54,7 +56,7 @@ jobs:
           token: ${{ secrets.SLACK_TOKEN }}
           payload: |
             {
-              "channel": "C09CESE1N8G",  # Replace with channel name or ID
+              "channel": "C09CESE1N8G",
               "text": "A PR was created <!date^${{ steps.pr_time.outputs.time }}^{date_num} at {time_secs}|just now>: ${{ github.event.pull_request.html_url }}"
             }
 
@@ -68,8 +70,8 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_CHANNEL: "C09CESE1N8G"
           SLACK_MESSAGE: |
-            Pull Request Merged! 🎉
-            Title: ${{ github.event.pull_request.title }}
-            Branch: ${{ github.event.pull_request.head.ref }} -> ${{ github.event.pull_request.base.ref }}
-            Merged by: ${{ github.event.pull_request.merged_by.login }}
-            Link: ${{ github.event.pull_request.html_url }}
+            ✅ *Pull Request Merged!*
+            *Title:* ${{ github.event.pull_request.title }}
+            *Branch:* `${{ github.event.pull_request.head.ref }}` → `${{ github.event.pull_request.base.ref }}`
+            *Merged by:* ${{ github.event.pull_request.merged_by.login }}
+            *Link:* ${{ github.event.pull_request.html_url }}
