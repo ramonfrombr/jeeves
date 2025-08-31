@@ -25,6 +25,8 @@ async def create_app(*args, **kwargs):
     app.config["SLACK_TOKEN"] = os.environ.get('SLACK_TOKEN')
     app.config["SLACK_POST_URL"] = os.environ.get('SLACK_POST_URL')
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get('DATABASE_URL')
+    app.config["WEATHER_URL"] = os.environ.get('WEATHER_URL')
+    app.config["WEATHER_TOKEN"] = os.environ.get('WEATHER_TOKEN')
 
     auth_manager.init_app(app)
 
