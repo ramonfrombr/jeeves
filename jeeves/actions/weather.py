@@ -20,8 +20,11 @@ async def fetch_weather(location):
         text=text, token=current_app.config["WEATHER_TOKEN"])
 
     response = requests.get(url)
+    if response.status_code == 404:
+        return f"Sorry, I couldn't find weather for '{location}'."
+
     response.raise_for_status()
-    return process_weather_response(response.json())
+    return await process_weather_response(response.json())
 
 
 async def weather_action(text, metadata):
