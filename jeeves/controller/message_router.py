@@ -12,6 +12,13 @@ OUTGOING_MAP = {"slack": None}
 
 
 async def process_message(message, metadata):
+    """Decide on an action for a chat message.
+
+    Arguments:
+        message (str): The body of the chat message
+        metadata (dict): Data about who sent the message,
+              the time and channel.
+    """
     reply = None
 
     print(f"In process message with '{message}'")
@@ -23,3 +30,10 @@ async def process_message(message, metadata):
 
     if reply:
         send_message_to_slack(reply, metadata)
+
+    """ If we have different response routes, we can use this method
+    OUTGOING_MAP.get(metadata["type"], default_outgoing)(
+        reply,
+        metadata,
+    )
+    """
