@@ -38,26 +38,14 @@ jobs:
           WEATHER_URL: ${{ secrets.WEATHER_URL }}
           WEATHER_TOKEN: ${{ secrets.WEATHER_TOKEN }}
 
-      - name: Create a new Slack channel for recent changes
-        id: conversation
-        uses: slackapi/slack-github-action@v2.1.1
-        with:
-          method: conversations.create
-          token: ${{ secrets.SLACK_TOKEN }}
-          payload: |
-            {
-              "name": "pr-${{ github.run_number }}"
-            }
-        env:
-          SLACK_LOG_LEVEL: DEBUG
       - name: Send the pull request link into the Slack channel
-        if: ${{ steps.conversation.outputs.ok }}
+        if: github.event_name == 'pull_request'
         uses: slackapi/slack-github-action@v2.1.1
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_TOKEN }}
           payload: |
             {
-              "channel": "${{ steps.conversation.outputs.channel_id }}",
-              "text": "A PR was created <!date^${{ steps.conversation.outputs.time }}^{date_num} at {time_secs}|just now>: ${{ github.event.pull_request.html_url }}"
+              "channel": "C09CESE1N8G",  # Replace with channel name or ID
+              "text": "A PR was created <!date^${{ github.event.pull_request.updated_at }}^{date_num} at {time_secs}|just now>: ${{ github.event.pull_request.html_url }}"
             }
